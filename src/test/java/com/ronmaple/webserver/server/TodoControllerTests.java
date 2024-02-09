@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -27,6 +28,7 @@ public class TodoControllerTests {
     @MockBean
     private TodoService todoService;
 
+    // Todo: these are unit tests. Need integration tests.
     @Test
     void getTodosShouldReturnTodoList() throws Exception {
         List<Todo> todos = Arrays.asList(new Todo("Test Todo 1"),
@@ -34,6 +36,20 @@ public class TodoControllerTests {
         when(todoService.findAll()).thenReturn(todos);
         this.mockMvc
                 .perform(get("/todos"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", hasSize(2)));
+    }
+
+    @Test
+    void postTodoShouldReturnTodo() throws Exception {
+        String todoContent = "Make pancakes";
+        when(todoService.save(todoContent)).thenReturn(
+            new Todo(todoContent)
+        );
+        this.mockMvc
+                .perform(post("/todos"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
